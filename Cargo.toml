@@ -5,6 +5,8 @@ edition = "2024"
 
 [dependencies]
 axum = "0.8.1"
+serde = { version = "1.0.219", features = ["alloc", "derive", "rc"] }
+serde_json = { version = "1.0.140", features = ["alloc", "indexmap", "arbitrary_precision"] }
 tokio = { version = "1.44.1", features = ["full"] }
 
 [dev-dependencies]
