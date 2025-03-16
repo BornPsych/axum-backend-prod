@@ -1,4 +1,4 @@
-use axum::{routing::get, Router};
+use axum::{Router, routing::get};
 use std::net::SocketAddr;
 use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
 

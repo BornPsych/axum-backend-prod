@@ -11,9 +11,10 @@ serde = { version = "1.0.219", features = ["alloc", "derive", "rc"] }
 serde_json = { version = "1.0.140", features = ["alloc", "indexmap", "arbitrary_precision"] }
 
 # Axum
-axum = "0.8.1"
+axum = {version = "0.8.1", features = ["macros"]}
 tower-http = { version = "0.6.2", features = ["fs"] }
 tower-cookies = "0.11.0"
+lazy-regex = "3.4.1"
 
 
 [dev-dependencies]

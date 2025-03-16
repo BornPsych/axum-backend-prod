@@ -3,13 +3,13 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 use tower_cookies::{Cookie, Cookies};
 
-use crate::{web, Error, Result};
+use crate::{Error, Result, web};
 
 pub fn routes() -> Router {
     Router::new().route("/api/login", post(api_login))
 }
 
-async fn api_login(cookies:Cookies, payload: Json<LoginPayload>) -> Result<Json<Value>> {
+async fn api_login(cookies: Cookies, payload: Json<LoginPayload>) -> Result<Json<Value>> {
     println!("Write a logic to make api login");
     // TODO: Real db/auth logic
     if payload.username != "demo1" && payload.pwd != "welcome" {
