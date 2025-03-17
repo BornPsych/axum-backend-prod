@@ -12,7 +12,7 @@ pub async fn log_request(
     uuid: Uuid,
     req_method: Method,
     uri:Uri,
-    ctx: Option<Ctx>,
+    ctx: Result<Ctx>,
     service_error: Option<&Error>,
     client_error: Option<ClientError>,
 )-> Result<()>{
@@ -29,7 +29,7 @@ pub async fn log_request(
         req_path: uri.to_string(),
         req_method: req_method.to_string(),
 
-        user_id:ctx.map(|c| c.user_id()),
+        user_id:ctx.ok().map(|c| c.user_id()),
         client_error_type: client_error.map(|e| e.as_ref().to_string()),
         error_type,
         error_data

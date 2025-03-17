@@ -87,7 +87,7 @@ async fn main_response_mapper(
 
     // Build and log a server log line
     let client_error = client_status_error.unzip().1;
-    // let  _ = log_request(uuid, req_method, uri, ctx, service_error, client_error).await;
+    let  _ = log_request(uuid, req_method, uri, ctx, service_error, client_error).await;
 
     error_response.unwrap_or(res)
 }
