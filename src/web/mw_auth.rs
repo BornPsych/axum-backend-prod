@@ -47,7 +47,7 @@ pub async fn mw_ctx_resolver(
 
     Ok(next.run(req).await)
 }
- 
+
 impl<S: Send + Sync> FromRequestParts<S> for Ctx {
     type Rejection = Error;
 
