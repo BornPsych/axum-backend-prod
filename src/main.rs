@@ -1,8 +1,10 @@
 #![allow(unused)]
 
 use axum::{
-    extract::{Path, Query}, middleware, response::{IntoResponse, Response}, routing::{get, get_service}, Json, Router
+    extract::{Path, Query}, http::{Method, Uri}, middleware, response::{IntoResponse, Response}, routing::{get, get_service}, Json, Router
 };
+use ctx::Ctx;
+use log::log_request;
 use model::ModelController;
 use serde::Deserialize;
 use serde_json::json;
@@ -15,6 +17,7 @@ mod ctx;
 mod error;
 mod model;
 mod web;
+mod log;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -58,7 +61,12 @@ fn route_hello() -> Router {
         .route("/hello2/{user_id}", get(handler_hello2))
 }
 
-async fn main_response_mapper(res: Response) -> Response {
+async fn main_response_mapper(
+	ctx: Result<Ctx>,
+	uri: Uri,
+	req_method: Method,
+	res: Response,
+) -> Response {
     let uuid = Uuid::new_v4();
 
     // Get the eventual response error
@@ -77,8 +85,10 @@ async fn main_response_mapper(res: Response) -> Response {
 
     });
 
-    println!(" ->> server log line {uuid} - Error:{service_error:?}");
-    
+    // Build and log a server log line
+    let client_error = client_status_error.unzip().1;
+    // let  _ = log_request(uuid, req_method, uri, ctx, service_error, client_error).await;
+
     error_response.unwrap_or(res)
 }
 
