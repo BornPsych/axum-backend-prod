@@ -6,8 +6,7 @@ async fn quick_dev() -> Result<()> {
     let hc = httpc_test::new_client("http://127.0.0.1:8000")?;
 
     hc.do_get("/hello?name=yogesh").await?.print().await?;
-    
-    
+
     let req_login = hc.do_post(
         "/api/login",
         json!({
@@ -15,9 +14,9 @@ async fn quick_dev() -> Result<()> {
             "pwd":"welcome"
         }),
     );
-    
+
     req_login.await?.print().await?;
-    
+
     let req_create_ticket = hc.do_post(
         "/api/tickets",
         json!({

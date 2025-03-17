@@ -13,10 +13,10 @@ use tower_cookies::CookieManagerLayer;
 use tower_http::services::ServeDir;
 
 pub use self::error::{Error, Result};
+mod ctx;
 mod error;
 mod model;
 mod web;
-mod ctx;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -31,6 +31,10 @@ async fn main() -> Result<()> {
         .merge(web::routes_login::routes())
         .nest("/api", routes_api)
         .layer(middleware::map_response(main_response_mapper))
+        .layer(middleware::from_fn_with_state(
+            mc.clone(),
+            web::mw_auth::mw_ctx_resolver,
+        ))
         .layer(CookieManagerLayer::new())
         .fallback_service(routes_static());
 
