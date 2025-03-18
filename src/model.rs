@@ -33,6 +33,7 @@ impl ModelController {
 }
 
 // CRUD Implementation
+// ModelController contains only stateless functions that operate on data. No stae is stored in this, this only operates on data.
 impl ModelController {
     pub async fn create_ticket(&self, ctx: Ctx, ticket_fc: TicketForCreate) -> Result<Ticket> {
         let mut store = self.tickets_store.lock().unwrap();

@@ -16,3 +16,16 @@ impl Ctx {
         self.user_id
     }
 }
+
+/*
+    Context (Ctx) does not store mutable state because:
+
+    Request-Specific Data:
+    It only carries metadata like authentication details, request ID, and permissions.
+    It is created per request and discarded after processing.
+    Avoids Shared Mutable State:
+
+    If Ctx held state, it could cause race conditions in concurrent environments.
+    Keeping it immutable allows multiple requests to process simultaneously without interference.
+
+*/
