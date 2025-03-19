@@ -2,7 +2,7 @@ use crate::ctx::Ctx;
 use crate::model::ModelManager;
 use crate::web::AUTH_TOKEN;
 use crate::web::{Error, Result};
-use async_trait::async_trait;
+use axum::body::Body;
 use axum::extract::{FromRequestParts, State};
 use axum::http::Request;
 use axum::http::request::Parts;
@@ -14,8 +14,8 @@ use tower_cookies::{Cookie, Cookies};
 #[allow(dead_code)] // For now, until we have the rpc.
 pub async fn mw_ctx_require<B>(
 	ctx: Result<Ctx>,
-	req: Request<B>,
-	next: Next<B>,
+	req: Request<Body>,
+	next: Next,
 ) -> Result<Response> {
 	println!("->> {:<12} - mw_ctx_require - {ctx:?}", "MIDDLEWARE");
 
@@ -24,11 +24,11 @@ pub async fn mw_ctx_require<B>(
 	Ok(next.run(req).await)
 }
 
-pub async fn mw_ctx_resolve<B>(
+pub async fn mw_ctx_resolve(
 	_mm: State<ModelManager>,
 	cookies: Cookies,
-	mut req: Request<B>,
-	next: Next<B>,
+	mut req: Request<Body>,
+	next: Next,
 ) -> Result<Response> {
 	println!("->> {:<12} - mw_ctx_resolve", "MIDDLEWARE");
 
@@ -42,7 +42,7 @@ pub async fn mw_ctx_resolve<B>(
 	if result_ctx.is_err()
 		&& !matches!(result_ctx, Err(CtxExtError::TokenNotInCookie))
 	{
-		cookies.remove(Cookie::named(AUTH_TOKEN))
+		cookies.remove(Cookie::from(AUTH_TOKEN))
 	}
 
 	// Store the ctx_result in the request extension.
@@ -52,7 +52,6 @@ pub async fn mw_ctx_resolve<B>(
 }
 
 // region:    --- Ctx Extractor
-#[async_trait]
 impl<S: Send + Sync> FromRequestParts<S> for Ctx {
 	type Rejection = Error;
 

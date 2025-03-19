@@ -38,10 +38,11 @@ async fn main() -> Result<()> {
 		.fallback_service(routes_static::serve_dir());
 
 	// region:    --- Start Server
-	let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
-	println!("->> {:<12} - {addr}\n", "LISTENING");
-	axum::Server::bind(&addr)
-		.serve(routes_all.into_make_service())
+	let listener = tokio::net::TcpListener::bind("127.0.0.1:8000")
+		.await
+		.unwrap();
+	println!("Running on the server with port 8000");
+	axum::serve(listener, routes_all.into_make_service())
 		.await
 		.unwrap();
 	// endregion: --- Start Server
