@@ -1,6 +1,6 @@
--- DEV ONLY _ Brute Force DROP Db (for local dev and unit test)
-SELECT pg_terminate_backend(pid) FROm pg_stat_activity WHERE 
-    username ='app_user' OR datname = 'app_db';
+-- DEV ONLY - Brute Force DROP Db (for local dev and unit test)
+SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE 
+    usename ='app_user' OR datname = 'app_db';
 DROP DATABASE IF EXISTS app_db;
 DROP USER IF EXISTS app_user;
 
