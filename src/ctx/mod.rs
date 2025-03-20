@@ -2,6 +2,7 @@
 
 mod error;
 
+// Always re-export the errors because, it defined a cohesive API for other modules to import result and erros
 pub use self::error::{Error, Result};
 
 // endregion: --- Modules

@@ -1,4 +1,4 @@
-// We create an entirely different setup for dev database becuase we don't want to mess with any moc db for test, or we want quick interation on  our db, do quick nuking and generatoin of db, also stage and prod db dont have any seed values or something like this.
+// We create an entirely different setup for dev database becuase we don't want to mess with any prod db for test or staging, or we want quick iterations on our db, do quick nuking and generatoin of db, also stage and prod db dont have any seed values or something like this.
 
 use std::{fmt::Error, fs, path::PathBuf, time::Duration};
 
@@ -18,7 +18,7 @@ const SQL_DIR: &str = "sql/dev_initial";
 
 pub(crate) async fn init_dev_db() -> Result<(), Box<dyn std::error::Error>> {
 	info!("{:<12} init_dev_db()", "FOR_DEV_ONLY");
-	// Create the aapp_db/app_user with the postgres user.
+	// Create the app_db/app_user with the postgres user.
 	{
 		let admin_db = new_db_pool(PG_DEV_POSTGRES_URL).await?;
 		pexec(&admin_db, SQL_RECREATE_DB).await?;
