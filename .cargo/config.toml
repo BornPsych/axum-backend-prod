@@ -7,6 +7,19 @@
 # Scope down tracing, to filter out external lib tracing.
 RUST_LOG = "rust_full_stack=debug"
 
+
+# -- Service Environment Variables
+# IMPORTANT: 
+#   For cargo commands only.
+#   For deployed env, should be managed by container 
+#   (e.g., Kubernetes).
+
+## -- ConfigMap
+
+# This will be relative to Cargo.toml
+# In deployed images, probably use absolute path.
+SERVICE_WEB_FOLDER="web-folder/"
+
 [term]
 quiet = false          # whether cargo output is quiet
 verbose = false        # whether cargo provides verbose output
