@@ -8,6 +8,12 @@
 RUST_LOG = "rust_full_stack=debug"
 
 
+## -- Secrets
+# Keys and passwords below are for localhost dev ONLY
+# e.g., "welcome" type of passowrds.
+# i.e. Encryption not needed.
+
+SERVICE_DB_URL="postgres://app_user:dev_only_pwd@localhost/app_db"
 # -- Service Environment Variables
 # IMPORTANT: 
 #   For cargo commands only.
