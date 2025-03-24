@@ -10,6 +10,22 @@ pub trait DbBmc {
 	const TABLE: &'static str;
 }
 
+pub async fn create<MC, E>(_ctx: &Ctx, mm: &ModelManager, data: E) -> Result<i64>
+where
+	MC: DbBmc,
+	E: HasFields,
+{
+	let db = mm.db();
+	let field = data.not_none_fields();
+	let (id,) = sqlb::insert()
+		.table(MC::TABLE)
+		.data(field)
+		.returning(&["id"])
+		.fetch_one(db)
+		.await?;
+	Ok(id)
+}
+
 pub async fn get<MC, E>(_ctx: &Ctx, mm: &ModelManager, id: i64) -> Result<E>
 where
 	MC: DbBmc,
@@ -47,4 +63,25 @@ where
 		.await?;
 
 	Ok(tasks)
+}
+
+pub async fn update<MC, E>(
+	_ctx: &Ctx,
+	mm: &ModelManager,
+	id: i64,
+	data: E,
+) -> Result<()>
+where
+	MC: DbBmc,
+	E: HasFields,
+{
+	let db = mm.db();
+	let field = data.not_none_fields();
+	let count = sqlb::update()
+		.table(MC::TABLE)
+		.and_where("id", "=", id)
+		.data(field)
+		.exec(db)
+		.await?;
+	Ok(())
 }
