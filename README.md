@@ -8,6 +8,9 @@ bacon run-long -- -q
 
 # Terminal 2 - To run the quick_dev.
 bacon ex -- -q --example quick_dev
+
+# Terminal 3 - To run the test
+bacon test -- -q --tests .
 ```
 
 ## Starting the DB
