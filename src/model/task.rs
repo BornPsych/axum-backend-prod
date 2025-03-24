@@ -16,12 +16,12 @@ pub struct Task {
 	pub title: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Fields, Deserialize)]
 pub struct TaskForCreate {
 	pub title: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Fields, Deserialize)]
 pub struct TaskForUpdate {
 	pub title: Option<String>,
 }
@@ -36,19 +36,11 @@ impl DbBmc for TaskBmc {
 
 impl TaskBmc {
 	pub async fn create(
-		_ctx: &Ctx,
+		ctx: &Ctx,
 		mm: &ModelManager,
 		task_c: TaskForCreate,
 	) -> Result<i64> {
-		let db = mm.db();
-		let (id,) = sqlx::query_as::<_, (i64,)>(
-			"INSERT INTO task (title) values ($1) returning id",
-		)
-		.bind(task_c.title)
-		.fetch_one(db)
-		.await?;
-
-		Ok(id)
+		base::create::<Self, TaskForCreate>(ctx, mm, task_c).await
 	}
 
 	pub async fn get(ctx: &Ctx, mm: &ModelManager, id: i64) -> Result<Task> {
@@ -59,16 +51,17 @@ impl TaskBmc {
 		base::list::<Self, _>(ctx, mm).await
 	}
 
-	pub async fn delete(_ctx: &Ctx, mm: &ModelManager, id: i64) -> Result<()> {
-		let count = sqlx::query("DELETE FROM task where id = $1")
-			.bind(id)
-			.execute(mm.db())
-			.await?
-			.rows_affected();
-		if count == 0 {
-			return Err(Error::EntityNotFound { entity: "task", id });
-		}
-		Ok(())
+	pub async fn delete(ctx: &Ctx, mm: &ModelManager, id: i64) -> Result<()> {
+		base::delete::<Self, Task>(ctx, mm, id).await
+	}
+
+	pub async fn update(
+		ctx: &Ctx,
+		mm: &ModelManager,
+		id: i64,
+		task_u: TaskForUpdate,
+	) -> Result<()> {
+		base::update::<Self, TaskForUpdate>(ctx, mm, id, task_u).await
 	}
 }
 //endRegion: TaskBmc

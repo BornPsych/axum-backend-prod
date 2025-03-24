@@ -83,5 +83,33 @@ where
 		.data(field)
 		.exec(db)
 		.await?;
-	Ok(())
+	if count == 0 {
+		Err(Error::EntityNotFound {
+			entity: MC::TABLE,
+			id,
+		})
+	} else {
+		Ok(())
+	}
+}
+
+pub async fn delete<MC, E>(_ctx: &Ctx, mm: &ModelManager, id: i64) -> Result<()>
+where
+	MC: DbBmc,
+	E: HasFields,
+{
+	let db = mm.db();
+	let count = sqlb::delete()
+		.table(MC::TABLE)
+		.and_where("id", "=", id)
+		.exec(db)
+		.await?;
+	if count == 0 {
+		Err(Error::EntityNotFound {
+			entity: MC::TABLE,
+			id,
+		})
+	} else {
+		Ok(())
+	}
 }
