@@ -1,4 +1,5 @@
 use crate::ctx::Ctx;
+use crate::model::Error;
 use crate::model::ModelManager;
 use crate::model::Result;
 use serde::{Deserialize, Serialize};
@@ -41,6 +42,30 @@ impl TaskBmc {
 
 		Ok(id)
 	}
+
+	pub async fn get(_ct: &Ctx, mm: &ModelManager, id: i64) -> Result<Task> {
+		let db = mm.db();
+
+		let task: Task = sqlx::query_as("SELECT * FROM task WHERE id = $1")
+			.bind(id)
+			.fetch_optional(db)
+			.await?
+			.ok_or(Error::EntityNotFound { entity: "task", id })?;
+
+		Ok(task)
+	}
+
+	pub async fn delete(_ctx: &Ctx, mm: &ModelManager, id: i64) -> Result<()> {
+		let count = sqlx::query("DELETE FROM task where id = $1")
+			.bind(id)
+			.execute(mm.db())
+			.await?
+			.rows_affected();
+		if count == 0 {
+			return Err(Error::EntityNotFound { entity: "task", id });
+		}
+		Ok(())
+	}
 }
 //endRegion: TaskBmc
 
@@ -69,25 +94,19 @@ mod tests {
 		let id = TaskBmc::create(&ctx, &mm, task_c).await?;
 
 		// -- Check
-		let (title,): (String,) =
-			sqlx::query_as("SELECT title from task where id = $1")
-				.bind(id)
-				.fetch_one(mm.db())
-				.await?;
-		println!("--> {title}");
-
-		assert_eq!(title, fx_title);
+		let task = TaskBmc::get(&ctx, &mm, id).await?;
+		assert_eq!(task.title, fx_title);
 
 		// -- Cleanup
-		let count = sqlx::query("DELETE FROM task where id = $1")
-			.bind(id)
-			.execute(mm.db())
-			.await?
-			.rows_affected();
-
-		assert_eq!(count, 1, "Didnot delete 1 row?");
+		let count = TaskBmc::delete(&ctx, &mm, id).await?;
 
 		Ok(())
+	}
+
+	#[serial]
+	#[tokio::test]
+	async fn test_get_err_not_found() -> Result<()> {
+		todo!()
 	}
 }
 // endregion
