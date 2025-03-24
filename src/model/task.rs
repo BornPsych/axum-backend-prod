@@ -106,7 +106,49 @@ mod tests {
 	#[serial]
 	#[tokio::test]
 	async fn test_get_err_not_found() -> Result<()> {
-		todo!()
+		// Setup and fixtures
+		let mm = _dev_utils::init_test().await;
+		let ctx = Ctx::root_ctx();
+		let fx_id = 100;
+
+		// -- Exec
+		let res = TaskBmc::get(&ctx, &mm, fx_id).await;
+
+		assert!(
+			matches!(
+				res,
+				Err(Error::EntityNotFound {
+					entity: "task",
+					id: 100
+				})
+			),
+			"EntityNotFound not matching"
+		);
+		Ok(())
+	}
+
+	#[serial]
+	#[tokio::test]
+	async fn test_delete_err_not_found() -> Result<()> {
+		// Setup and fixtures
+		let mm = _dev_utils::init_test().await;
+		let ctx = Ctx::root_ctx();
+		let fx_id = 100;
+
+		// -- Exec
+		let res = TaskBmc::delete(&ctx, &mm, fx_id).await;
+
+		assert!(
+			matches!(
+				res,
+				Err(Error::EntityNotFound {
+					entity: "task",
+					id: 100
+				})
+			),
+			"EntityNotFound not matching"
+		);
+		Ok(())
 	}
 }
 // endregion
