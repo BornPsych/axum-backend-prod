@@ -55,6 +55,16 @@ impl TaskBmc {
 		Ok(task)
 	}
 
+	pub async fn list(_ctx: &Ctx, mm: &ModelManager) -> Result<Vec<Task>> {
+		let db = mm.db();
+
+		let tasks: Vec<Task> = sqlx::query_as("SELECT * FROM task ORDER BY id")
+			.fetch_all(db)
+			.await?;
+
+		Ok(tasks)
+	}
+
 	pub async fn delete(_ctx: &Ctx, mm: &ModelManager, id: i64) -> Result<()> {
 		let count = sqlx::query("DELETE FROM task where id = $1")
 			.bind(id)
@@ -101,6 +111,12 @@ mod tests {
 		let count = TaskBmc::delete(&ctx, &mm, id).await?;
 
 		Ok(())
+	}
+
+	#[serial]
+	#[tokio::test]
+	async fn test_list_ok() -> Result<()> {
+		todo!()
 	}
 
 	#[serial]

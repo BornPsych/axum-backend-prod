@@ -21,7 +21,7 @@
 
 mod error;
 mod store;
-mod task;
+pub mod task;
 
 use sqlx::{Pool, Postgres};
 use store::new_db_pool;
