@@ -21,19 +21,31 @@
 
 mod error;
 mod store;
+mod task;
+
+use sqlx::{Pool, Postgres};
+use store::new_db_pool;
 
 pub use self::error::{Error, Result};
 
+pub type Db = Pool<Postgres>;
 // endregion: --- Modules
 
 #[derive(Clone)]
 pub struct ModelManager {
-	// db: Db,
+	db: Db,
 }
 
 impl ModelManager {
 	pub async fn new() -> Result<Self> {
-		// FIXME - TBC
-		Ok(ModelManager {})
+		// Constructor
+		let db = new_db_pool().await?;
+		Ok(ModelManager { db })
+	}
+
+	/// Return the sqlx db pool reference.
+	/// (Only for the model layer)
+	pub(in crate::model) fn db(&self) -> &Db {
+		&self.db
 	}
 }
