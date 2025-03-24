@@ -85,7 +85,7 @@ mod tests {
 	use crate::_dev_utils;
 
 	use super::*;
-	use anyhow::Result;
+	use anyhow::{Ok, Result};
 	use serial_test::serial;
 
 	#[serial]
@@ -116,7 +116,20 @@ mod tests {
 	#[serial]
 	#[tokio::test]
 	async fn test_list_ok() -> Result<()> {
-		todo!()
+		// Setup and fixtures
+		let mm = _dev_utils::init_test().await;
+		let ctx = Ctx::root_ctx();
+		let fx_titles = ["test_list_ok-task-1", "test_list_ok-task=2"];
+		_dev_utils::seed_tasks(&ctx, &mm, &fx_titles).await?;
+
+		// -- Exec
+		let tasks = TaskBmc::list(&ctx, &mm).await?;
+		let tasks: Vec<Task> = tasks
+			.into_iter()
+			.filter(|t| t.title.starts_with("test_list_ok-task"))
+			.collect();
+		assert_eq!(tasks.len(), 2, "number of seesed tasks.");
+		Ok(())
 	}
 
 	#[serial]
