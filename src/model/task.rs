@@ -4,11 +4,13 @@ use crate::model::ModelManager;
 use crate::model::Result;
 use crate::model::base::DbBmc;
 use serde::{Deserialize, Serialize};
+
+use sqlb::Fields;
 use sqlx::FromRow;
 
 use super::base;
 // region: -- Task Types
-#[derive(Debug, Clone, FromRow, Serialize)]
+#[derive(Debug, Clone, Fields, FromRow, Serialize)]
 pub struct Task {
 	pub id: i64,
 	pub title: String,
@@ -54,7 +56,7 @@ impl TaskBmc {
 	}
 
 	pub async fn list(ctx: &Ctx, mm: &ModelManager) -> Result<Vec<Task>> {
-		base::list::<_>(ctx, mm).await
+		base::list::<Self, _>(ctx, mm).await
 	}
 
 	pub async fn delete(_ctx: &Ctx, mm: &ModelManager, id: i64) -> Result<()> {
