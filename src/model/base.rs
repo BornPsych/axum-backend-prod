@@ -28,3 +28,16 @@ where
 
 	Ok(entity)
 }
+
+pub async fn list<E>(_ctx: &Ctx, mm: &ModelManager) -> Result<Vec<E>>
+where
+	E: for<'r> FromRow<'r, PgRow> + Unpin + Send,
+{
+	let db = mm.db();
+
+	let tasks: Vec<E> = sqlx::query_as("SELECT * FROM task ORDER BY id")
+		.fetch_all(db)
+		.await?;
+
+	Ok(tasks)
+}
