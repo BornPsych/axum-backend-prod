@@ -70,8 +70,8 @@ impl UserBmc {
 	}
 
 	pub async fn first_by_username<E>(
-		ctx: Ctx,
-		mm: ModelManager,
+		ctx: &Ctx,
+		mm: &ModelManager,
 		username: &str,
 	) -> Result<Option<E>>
 	where
@@ -90,8 +90,37 @@ impl UserBmc {
 	pub async fn create(
 		ctx: Ctx,
 		mm: ModelManager,
-		usre_c: UserForLogin,
+		user_c: UserForLogin,
 	) -> Result<User> {
 		todo!()
 	}
+
+	// startregion: -- Tests
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::_dev_utils;
+	use anyhow::{Context, Result};
+	use serial_test::serial;
+
+	#[serial]
+	#[tokio::test]
+	async fn test_first_ok_demo1() -> Result<()> {
+		let mm = _dev_utils::init_test().await;
+		let ctx = Ctx::root_ctx();
+		let fx_username = "demo1";
+
+		// -- Exec
+		let user: User = UserBmc::first_by_username(&ctx, &mm, fx_username)
+			.await?
+			.context("Should have a user 'demo1'")?;
+
+		// -- Check
+		assert_eq!(user.username, fx_username);
+
+		Ok(())
+	}
+}
+// endregion: --- Tests
