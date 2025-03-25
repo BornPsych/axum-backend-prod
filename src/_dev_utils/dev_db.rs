@@ -6,6 +6,14 @@ use axum::extract::path;
 use sqlx::{Pool, Postgres, postgres::PgPoolOptions};
 use tracing::info;
 
+use crate::{
+	ctx::Ctx,
+	model::{
+		ModelManager,
+		user::{User, UserBmc},
+	},
+};
+
 type Db = Pool<Postgres>;
 
 // NOTE: Hardcode to prevent deployed system db update.
@@ -15,6 +23,8 @@ const PG_DEV_APP_URL: &str = "postgres://app_user:dev_only_pwd@localhost/app_db"
 // sql files
 const SQL_RECREATE_DB: &str = "sql/dev_initial/00-recreate-db.sql";
 const SQL_DIR: &str = "sql/dev_initial";
+
+const DEMO_PWD: &str = "welcome";
 
 pub(crate) async fn init_dev_db() -> Result<(), Box<dyn std::error::Error>> {
 	info!("{:<12} init_dev_db()", "FOR_DEV_ONLY");
@@ -43,6 +53,17 @@ pub(crate) async fn init_dev_db() -> Result<(), Box<dyn std::error::Error>> {
 			}
 		}
 	}
+
+	// -- Init Model layer.
+	let mm = ModelManager::new().await?;
+	let ctx = Ctx::root_ctx();
+
+	// -- Set Demo1 pwd
+	let demo1_user: User = UserBmc::first_by_username(&ctx, &mm, "demo1")
+		.await?
+		.unwrap();
+	UserBmc::update_pwd(&ctx, &mm, demo1_user.id, DEMO_PWD).await?;
+	info!("{:<12} - init_dev_db - set demo1 pwd", "FOR-DEV_ONLY");
 
 	Ok(())
 }
