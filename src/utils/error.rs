@@ -3,6 +3,7 @@ pub type Result<T> = core::result::Result<T, Error>;
 #[derive(Debug)]
 pub enum Error {
 	DateFailParse(String),
+	FailTOB64uDecide,
 }
 
 impl core::fmt::Display for Error {
