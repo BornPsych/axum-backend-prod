@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::web;
+use crate::{model, web};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use serde::Serialize;
@@ -8,14 +8,24 @@ use tracing::debug;
 
 pub type Result<T> = core::result::Result<T, Error>;
 
-#[derive(Debug, Serialize, Clone, strum_macros::AsRefStr)]
+#[derive(Debug, Serialize, strum_macros::AsRefStr)]
 #[serde(tag = "type", content = "data")]
 pub enum Error {
 	// -- Login
 	LoginFail,
+	LoginFailUsernameNotFound,
+	LoginFailUserHasNoPwd { user_id: i64 },
+	LoginFailPwdNotMatching { user_id: i64 },
 
 	// -- CtxExtError
 	CtxExt(web::mw_auth::CtxExtError),
+	Model(model::Error),
+}
+
+impl From<model::Error> for Error {
+	fn from(error: model::Error) -> Self {
+		Self::Model(error)
+	}
 }
 
 // region:    --- Axum IntoResponse
