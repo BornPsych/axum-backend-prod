@@ -37,8 +37,26 @@ mod tests {
 	use anyhow::Result;
 	use rand::RngCore;
 
+	#[test]
 	fn test_encrypt_into_b64u_ok() -> Result<()> {
-		todo!()
+		// -- Setup and fixture
+		let mut fx_key = [0u8, 64];
+		rand::rng().fill_bytes(&mut fx_key);
+
+		let enc_content = EncryptContent {
+			content: "this is content".to_string(),
+			salt: "can be anything".to_string(),
+		};
+
+		// -- Exec
+		let fx_res = encrypt_into_b64u(&fx_key, &enc_content)?;
+
+		// -- Check
+		let res = encrypt_into_b64u(&fx_key, &enc_content)?;
+
+		assert_eq!(res, fx_res);
+
+		Ok(())
 	}
 }
 
