@@ -40,7 +40,7 @@ mod tests {
 	#[test]
 	fn test_encrypt_into_b64u_ok() -> Result<()> {
 		// -- Setup and fixture
-		let mut fx_key = [0u8, 64];
+		let mut fx_key = [0u8; 64];
 		rand::rng().fill_bytes(&mut fx_key);
 
 		let enc_content = EncryptContent {

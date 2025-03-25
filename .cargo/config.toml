@@ -14,6 +14,11 @@ RUST_LOG = "rust_full_stack=debug"
 # i.e. Encryption not needed.
 
 SERVICE_DB_URL="postgres://app_user:dev_only_pwd@localhost/app_db"
+
+SERVICE_PWD_KEY="8AspaZvPvoyiO2vIcld73dxJKkqKkOZ6lxzjP2kpHsdPsodZvBOGT-mNL2KRso4AEXsCqugZkArgHprgeL84MQ"
+
+SERVICE_TOKEN_KEY="3OcbRZ3OQiNaBbx7wa96z-2dUQSFsG8iutSsl6UeG7DTpD3idfwShpWW3Xh7VUYj34-U44HlB0ShfC9vTSy_yQ"
+SERVICE_TOKEN_DURATION_SEC="1800" # 30 minutes
 # -- Service Environment Variables
 # IMPORTANT: 
 #   For cargo commands only.
