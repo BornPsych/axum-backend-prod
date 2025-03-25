@@ -2,6 +2,7 @@
 
 // region:    --- Modules
 mod config;
+mod crypt;
 mod ctx;
 mod error;
 mod log;
