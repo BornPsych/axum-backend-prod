@@ -23,6 +23,7 @@ mod base;
 mod error;
 mod store;
 pub mod task;
+pub mod user;
 
 use sqlx::{Pool, Postgres};
 use store::new_db_pool;
