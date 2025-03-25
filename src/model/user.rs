@@ -1,3 +1,5 @@
+use crate::crypt::pwd::encrypt_pwd;
+use crate::crypt::{EncryptContent, pwd};
 use crate::ctx::Ctx;
 use crate::model::ModelManager;
 use crate::model::base::{self, DbBmc};
@@ -62,11 +64,11 @@ impl DbBmc for UserBmc {
 }
 
 impl UserBmc {
-	pub async fn get<E>(ctx: Ctx, mm: ModelManager, id: i64) -> Result<E>
+	pub async fn get<E>(ctx: &Ctx, mm: &ModelManager, id: i64) -> Result<E>
 	where
 		E: UserBy,
 	{
-		base::get::<Self, E>(&ctx, &mm, id).await
+		base::get::<Self, E>(ctx, mm, id).await
 	}
 
 	pub async fn first_by_username<E>(
@@ -87,12 +89,28 @@ impl UserBmc {
 		Ok(user)
 	}
 
-	pub async fn create(
-		ctx: Ctx,
-		mm: ModelManager,
-		user_c: UserForLogin,
-	) -> Result<User> {
-		todo!()
+	pub async fn update_pwd(
+		ctx: &Ctx,
+		mm: &ModelManager,
+		id: i64,
+		pwd_clear: &str,
+	) -> Result<()> {
+		let db = mm.db();
+		let user: UserForLogin = Self::get(ctx, mm, id).await?;
+
+		let pwd = pwd::encrypt_pwd(&EncryptContent {
+			content: pwd_clear.to_string(),
+			salt: user.pwd_salt.to_string(),
+		})?;
+
+		sqlb::update()
+			.table(Self::TABLE)
+			.and_where("id", "=", id)
+			.data(vec![("pwd", pwd.to_string()).into()])
+			.exec(db)
+			.await?;
+
+		Ok(())
 	}
 
 	// startregion: -- Tests
