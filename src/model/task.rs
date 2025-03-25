@@ -115,7 +115,34 @@ mod tests {
 			.into_iter()
 			.filter(|t| t.title.starts_with("test_list_ok-task"))
 			.collect();
-		assert_eq!(tasks.len(), 2, "number of seesed tasks.");
+		assert_eq!(tasks.len(), 2, "number of seeded tasks.");
+		Ok(())
+	}
+
+	#[serial]
+	#[tokio::test]
+	async fn test_update_ok() -> Result<()> {
+		// Setup and fixtures
+		let mm = _dev_utils::init_test().await;
+		let ctx = Ctx::root_ctx();
+		let fx_titles = "test_list_ok-task-1";
+		let fx_title_new = "test_list_ok_task_new";
+		let fx_task = _dev_utils::seed_tasks(&ctx, &mm, &[fx_titles])
+			.await?
+			.remove(0);
+
+		// -- Exec
+		let tasks = TaskBmc::update(
+			&ctx,
+			&mm,
+			fx_task.id,
+			TaskForUpdate {
+				title: Some(fx_title_new.to_string()),
+			},
+		)
+		.await?;
+		let task = TaskBmc::get(&ctx, &mm, fx_task.id).await?;
+		assert_eq!(task.title, "test_list_ok_task_new", "updated task");
 		Ok(())
 	}
 
