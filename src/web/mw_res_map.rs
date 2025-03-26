@@ -4,6 +4,8 @@ use crate::ctx::Ctx;
 use crate::log::log_request;
 use crate::web;
 use axum::Json;
+use axum::body::Body;
+use axum::extract::Request;
 use axum::http::{Method, Uri};
 use axum::response::{IntoResponse, Response};
 use serde_json::json;
@@ -11,7 +13,7 @@ use tracing::debug;
 use uuid::Uuid;
 
 pub async fn mw_reponse_map(
-	ctx: Ctx,
+	// ctx: Option<Ctx>,
 	uri: Uri,
 	req_method: Method,
 	res: Response,
@@ -44,9 +46,12 @@ pub async fn mw_reponse_map(
 	// -- Build and log the server log line.
 	let client_error = client_status_error.unzip().1;
 	// TODO: Need to hander if log_request fail (but should not fail request)
-	let _ = log_request(uuid, req_method, uri, ctx, web_error, client_error).await;
-
-	debug!("\n");
+	if let Some(ctx) = res.extensions().get::<Option<Ctx>>() {
+		// Handle context
+		let _ =
+			log_request(uuid, req_method, uri, ctx.clone(), web_error, client_error)
+				.await;
+	}
 
 	error_response.unwrap_or(res)
 }

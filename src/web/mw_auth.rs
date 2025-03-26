@@ -17,7 +17,7 @@ use axum::response::Response;
 use serde::Serialize;
 use time::format_description::parse;
 use tower_cookies::{Cookie, Cookies};
-use tracing::debug;
+use tracing::{debug, info};
 
 #[allow(dead_code)] // For now, until we have the rpc.
 pub async fn mw_ctx_require<B>(
