@@ -6,6 +6,10 @@ pub type Result<T> = core::result::Result<T, Error>;
 pub enum Error {
 	KeyFailHmac,
 	PwdNotMatching,
+	// -- Token
+	TokenInvalidFormat,
+	TokenCannotDecodeIdent,
+	TOkenCannotDecodeExp,
 }
 // region:    --- Error Boilerplate
 impl core::fmt::Display for Error {
