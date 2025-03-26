@@ -1,8 +1,12 @@
 use std::str::FromStr;
 
+use tracing_subscriber::fmt::format;
+
 use crate::config;
-use crate::crypt::{Error, Result};
-use crate::utils::{b64u_decode, b64u_encode};
+use crate::crypt::{EncryptContent, Error, Result, encrypt_into_b64u};
+use crate::utils::{
+	b64u_decode, b64u_encode, now_utc, now_utc_plus_sec_str, parse_utc,
+};
 
 // region:      -- Token Type
 
@@ -66,7 +70,17 @@ fn _generate_token(
 	salt: &str,
 	key: &[u8],
 ) -> Result<Token> {
-	todo!()
+	// -- Compute the two first components
+	let ident = ident.to_string();
+	let exp = now_utc_plus_sec_str(duration_sec);
+
+	// -- sign the first two components
+	let sign_b64u = _token_sign_into_b64u(&ident, &exp, salt, key)?;
+	Ok(Token {
+		ident,
+		exp,
+		sign_b64u,
+	})
 }
 
 fn _validate_token_sign_and_exp(
@@ -74,7 +88,24 @@ fn _validate_token_sign_and_exp(
 	salt: &str,
 	key: &[u8],
 ) -> Result<()> {
-	todo!()
+	// -- Validate singature
+	let new_sign_into_b64u =
+		_token_sign_into_b64u(&origin_token.ident, &origin_token.exp, salt, key)?;
+
+	if new_sign_into_b64u != origin_token.sign_b64u {
+		return Err(Error::TokenSignatureNotMatching);
+	}
+
+	// -- Validate expiration.
+	let origin_exp =
+		parse_utc(&origin_token.exp).map_err(|_| Error::TokenExpNotIso)?;
+	let now = now_utc();
+
+	if origin_exp < now {
+		return Err(Error::TokenExpired);
+	}
+
+	Ok(())
 }
 
 /// Create token signature from token parts and token salt
@@ -84,7 +115,15 @@ fn _token_sign_into_b64u(
 	salt: &str,
 	key: &[u8],
 ) -> Result<String> {
-	todo!()
+	let content = format!("{}.{}", b64u_encode(ident), b64u_encode(exp));
+	let signature = encrypt_into_b64u(
+		key,
+		&EncryptContent {
+			content,
+			salt: salt.to_string(),
+		},
+	)?;
+	Ok(signature)
 }
 // endregion    -- (private) Token Gen and Validation
 

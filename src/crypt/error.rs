@@ -9,7 +9,11 @@ pub enum Error {
 	// -- Token
 	TokenInvalidFormat,
 	TokenCannotDecodeIdent,
-	TOkenCannotDecodeExp,
+	TokenCannotDecodeExp,
+	TokenSignatureNotMatching,
+	TokenExpNotMatching,
+	TokenExpired,
+	TokenExpNotIso,
 }
 // region:    --- Error Boilerplate
 impl core::fmt::Display for Error {
