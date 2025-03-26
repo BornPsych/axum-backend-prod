@@ -129,6 +129,8 @@ fn _token_sign_into_b64u(
 
 #[cfg(test)]
 mod test {
+	use std::{thread, time::Duration};
+
 	use super::*;
 	use anyhow::{Ok, Result};
 
@@ -162,6 +164,48 @@ mod test {
 		// --Exec
 		let token: Token = fx_token_str.parse()?;
 		assert_eq!(token, fx_token);
+		Ok(())
+	}
+
+	#[test]
+	fn test_validate_web_token_ok() -> Result<()> {
+		// -- Setup and Fixtures
+		let fx_user = "user_one";
+		let fx_salt = "pepper";
+		let fx_duration_sec = 0.02; // 20ms
+		let token_key = &config().TOKEN_KEY;
+		let fx_token =
+			_generate_token(fx_user, fx_duration_sec, fx_salt, token_key)?;
+
+		// -- Exec
+		thread::sleep(Duration::from_millis(10));
+		let res = validate_web_token(&fx_token, fx_salt);
+
+		res?;
+
+		Ok(())
+	}
+
+	#[test]
+	fn test_validate_web_token_err_expired() -> Result<()> {
+		// -- Setup and Fixtures
+		let fx_user = "user_one";
+		let fx_salt = "pepper";
+		let fx_duration_sec = 0.01; // 10ms
+		let token_key = &config().TOKEN_KEY;
+		let fx_token =
+			_generate_token(fx_user, fx_duration_sec, fx_salt, token_key)?;
+
+		// -- Exec
+		thread::sleep(Duration::from_millis(20));
+		let res = validate_web_token(&fx_token, fx_salt);
+
+		// --- Check
+		assert!(
+			matches!(res, Err(Error::TokenExpired)),
+			"Should have matched `Err(Error::TokenExpired)` but was `{res:?}`"
+		);
+
 		Ok(())
 	}
 }
