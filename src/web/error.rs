@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{model, web};
+use crate::{crypt, model, web};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use serde::Serialize;
@@ -20,11 +20,18 @@ pub enum Error {
 	// -- CtxExtError
 	CtxExt(web::mw_auth::CtxExtError),
 	Model(model::Error),
+	Crypt(crypt::Error),
 }
 
 impl From<model::Error> for Error {
 	fn from(error: model::Error) -> Self {
 		Self::Model(error)
+	}
+}
+
+impl From<crypt::Error> for Error {
+	fn from(error: crypt::Error) -> Self {
+		Self::Crypt(error)
 	}
 }
 
