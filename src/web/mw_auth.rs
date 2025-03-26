@@ -11,6 +11,7 @@ use axum::body::Body;
 use axum::extract::{FromRequestParts, State};
 use axum::http::Request;
 use axum::http::request::Parts;
+use axum::http::uri::Authority;
 use axum::middleware::Next;
 use axum::response::Response;
 use serde::Serialize;
@@ -32,28 +33,24 @@ pub async fn mw_ctx_require<B>(
 }
 
 pub async fn mw_ctx_resolve(
-	_mm: State<ModelManager>,
+	mm: State<ModelManager>,
 	cookies: Cookies,
 	mut req: Request<Body>,
 	next: Next,
 ) -> Result<Response> {
 	debug!(" {:<12} - mw_ctx_resolve", "MIDDLEWARE");
 
-	let auth_token = cookies.get(AUTH_TOKEN).map(|c| c.value().to_string());
+	let ctx_ext_result = _ctx_resolve(mm, &cookies).await;
 
-	// FIXME - Compute real CtxAuthResult<Ctx>.
-	let result_ctx =
-		Ctx::new(100).map_err(|ex| CtxExtError::CtxCreateFail(ex.to_string()));
-
-	// Remove the cookie if something went wrong other than NoAuthTokenCookie.
-	if result_ctx.is_err()
-		&& !matches!(result_ctx, Err(CtxExtError::TokenNotInCookie))
+	if ctx_ext_result.is_err()
+		&& !matches!(ctx_ext_result, Err(CtxExtError::TokenNotInCookie))
 	{
-		cookies.remove(Cookie::from(AUTH_TOKEN))
+		cookies.remove(Cookie::from(AUTH_TOKEN));
 	}
 
-	// Store the ctx_result in the request extension.
-	req.extensions_mut().insert(result_ctx);
+	// store the ctx_ext_result in the request extension
+	// (for Ctx extractor).
+	req.extensions_mut().insert(ctx_ext_result);
 
 	Ok(next.run(req).await)
 }
