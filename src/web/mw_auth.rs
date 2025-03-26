@@ -1,6 +1,11 @@
+use std::str::FromStr;
+
+use crate::crypt;
+use crate::crypt::token::{Token, validate_web_token};
 use crate::ctx::Ctx;
 use crate::model::ModelManager;
-use crate::web::AUTH_TOKEN;
+use crate::model::user::{UserBmc, UserForAuth};
+use crate::web::{AUTH_TOKEN, set_token_cookie};
 use crate::web::{Error, Result};
 use axum::body::Body;
 use axum::extract::{FromRequestParts, State};
@@ -9,6 +14,7 @@ use axum::http::request::Parts;
 use axum::middleware::Next;
 use axum::response::Response;
 use serde::Serialize;
+use time::format_description::parse;
 use tower_cookies::{Cookie, Cookies};
 use tracing::debug;
 
@@ -52,6 +58,39 @@ pub async fn mw_ctx_resolve(
 	Ok(next.run(req).await)
 }
 
+async fn _ctx_resolve(
+	State(mm): State<ModelManager>,
+	cookies: &Cookies,
+) -> CtxExtResult {
+	// -- Get Token String
+	let token = cookies
+		.get(AUTH_TOKEN)
+		.map(|c| c.value().to_string())
+		.ok_or(CtxExtError::TokenNotInCookie)?;
+	// -- Parse Token
+	let token = token
+		.parse::<Token>()
+		.map_err(|_| CtxExtError::TokenWrongFormat)?;
+	// -- Get UserForAuth
+	let user = UserBmc::first_by_username::<UserForAuth>(
+		&Ctx::root_ctx(),
+		&mm,
+		&token.ident,
+	)
+	.await
+	.map_err(|ex| CtxExtError::ModelAccessError(ex.to_string()))?
+	.ok_or(CtxExtError::UserNotFound)?;
+	// -- Validate Token
+	validate_web_token(&token, &user.token_salt.to_string())
+		.map_err(|_| CtxExtError::FailValidate)?;
+	// -- Update Token
+	set_token_cookie(cookies, &user.username, &user.token_salt.to_string())
+		.map_err(|_| CtxExtError::CannotSetTokenCookie)?;
+
+	// -- Create CtxExtResult
+	Ctx::new(user.id).map_err(|ex| CtxExtError::CtxCreateFail(ex.to_string()))
+}
+
 // region:    --- Ctx Extractor
 impl<S: Send + Sync> FromRequestParts<S> for Ctx {
 	type Rejection = Error;
@@ -77,5 +116,12 @@ pub enum CtxExtError {
 	TokenNotInCookie,
 	CtxNotInRequestExt,
 	CtxCreateFail(String),
+	TokenWrongFormat,
+	UserNotFound,
+	ModelAccessError(String),
+	FailValidate,
+	CannotSetTokenCookie,
+	CannotCreateFail(String),
 }
+
 // endregion: --- Ctx Extractor Result/Error
