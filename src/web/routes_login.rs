@@ -14,8 +14,8 @@ use tracing_subscriber::field::debug;
 
 pub fn routes(mm: ModelManager) -> Router {
 	Router::new()
-		.route("/api/v1/login", post(api_login_handler))
-		.route("/api/v1/logoff", post(api_logoff_handler))
+		.route("/api/login", post(api_login_handler))
+		.route("/api/logoff", post(api_logoff_handler))
 		.with_state(mm)
 }
 
